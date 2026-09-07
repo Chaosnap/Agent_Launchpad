@@ -100,6 +100,45 @@ function InsightCard({
   );
 }
 
+function BreakdownPanel({
+  title,
+  subtitle,
+  total,
+  items,
+}: {
+  title: string;
+  subtitle: string;
+  total: number;
+  items: { label: string; value: number }[];
+}) {
+  return (
+    <section className="breakdown-panel" aria-label={title}>
+      <div className="breakdown-header">
+        <span className="eyebrow">{title}</span>
+        <p>{subtitle}</p>
+      </div>
+      <div className="breakdown-rows">
+        {items.map((item) => {
+          const share = total === 0 ? 0 : Math.round((item.value / total) * 100);
+          return (
+            <div className="breakdown-row" key={item.label}>
+              <div className="breakdown-row-copy">
+                <strong>{item.label}</strong>
+                <span>
+                  {item.value} · {share}%
+                </span>
+              </div>
+              <div className="breakdown-track" aria-hidden>
+                <span style={{ width: `${item.value === 0 ? 0 : Math.max(8, share)}%` }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -175,6 +214,15 @@ export default function App() {
     };
   }, [messages]);
 
+  const playgroundBreakdown = useMemo(() => {
+    const longMessages = messages.filter((message) => message.content.trim().length >= 280).length;
+    return [
+      { label: "You", value: playgroundInsights.userMessages },
+      { label: "Agent", value: playgroundInsights.assistantMessages },
+      { label: "Long messages (280+ chars)", value: longMessages },
+    ];
+  }, [messages, playgroundInsights.assistantMessages, playgroundInsights.userMessages]);
+
   const sessionInsights = useMemo(() => {
     const totalMessages = sessionMessages.length;
     const commentMessages = sessionMessages.filter((message) => message.kind === "comment").length;
@@ -200,6 +248,21 @@ export default function App() {
       taskShare,
     };
   }, [sessionMessages]);
+
+  const sessionBreakdown = useMemo(
+    () => [
+      { label: "Task messages", value: sessionInsights.taskMessages },
+      { label: "Comment messages", value: sessionInsights.commentMessages },
+      { label: "Delegation handoffs", value: sessionInsights.delegationMessages },
+      { label: "Human prompts", value: sessionInsights.userMessages },
+    ],
+    [
+      sessionInsights.commentMessages,
+      sessionInsights.delegationMessages,
+      sessionInsights.taskMessages,
+      sessionInsights.userMessages,
+    ],
+  );
 
   const refreshAgents = useCallback(async () => {
     const { agents: next } = await api.listAgents();
@@ -992,6 +1055,12 @@ export default function App() {
                 fill={Math.min(100, Math.max(8, Math.round(playgroundInsights.averageLength / 3)))}
               />
             </section>
+            <BreakdownPanel
+              title="Message breakdown"
+              subtitle="A quick visual split of who is talking and how verbose the conversation is."
+              total={playgroundInsights.totalMessages}
+              items={playgroundBreakdown}
+            />
 
             {showSettings && (
               <form className="settings-panel" onSubmit={saveAgent}>
@@ -1238,6 +1307,12 @@ export default function App() {
                 )}
               />
             </section>
+            <BreakdownPanel
+              title="Session traffic"
+              subtitle="Visualize how much traffic is task delivery, comments, and delegated work."
+              total={sessionInsights.totalMessages}
+              items={sessionBreakdown}
+            />
 
             {showSessionMembers && (
               <div className="settings-panel">
