@@ -77,6 +77,29 @@ function Spinner() {
   return <span className="spinner" aria-label="Loading" />;
 }
 
+function InsightCard({
+  label,
+  value,
+  detail,
+  fill,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  fill: number;
+}) {
+  return (
+    <article className="insight-card">
+      <span className="insight-label">{label}</span>
+      <strong>{value}</strong>
+      <span className="insight-detail">{detail}</span>
+      <div className="insight-track" aria-hidden>
+        <span style={{ width: `${fill}%` }} />
+      </div>
+    </article>
+  );
+}
+
 export default function App() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -128,6 +151,55 @@ export default function App() {
     () => sessionMessages.filter((message) => showSessionDetails || isUserFacing(message)),
     [sessionMessages, showSessionDetails],
   );
+
+  const playgroundInsights = useMemo(() => {
+    const totalMessages = messages.length;
+    const userMessages = messages.filter((message) => message.role === "user").length;
+    const assistantMessages = totalMessages - userMessages;
+    const averageLength =
+      totalMessages === 0
+        ? 0
+        : Math.round(
+            messages.reduce((sum, message) => sum + message.content.trim().length, 0) / totalMessages,
+          );
+    const assistantShare =
+      totalMessages === 0 ? 0 : Math.round((assistantMessages / totalMessages) * 100);
+    const userShare = totalMessages === 0 ? 0 : Math.round((userMessages / totalMessages) * 100);
+    return {
+      totalMessages,
+      userMessages,
+      assistantMessages,
+      averageLength,
+      assistantShare,
+      userShare,
+    };
+  }, [messages]);
+
+  const sessionInsights = useMemo(() => {
+    const totalMessages = sessionMessages.length;
+    const commentMessages = sessionMessages.filter((message) => message.kind === "comment").length;
+    const taskMessages = totalMessages - commentMessages;
+    const userMessages = sessionMessages.filter((message) => message.senderId === USER_PARTY).length;
+    const delegationMessages = sessionMessages.filter(
+      (message) =>
+        message.senderId !== undefined &&
+        message.recipientId !== undefined &&
+        message.senderId !== USER_PARTY &&
+        message.recipientId !== USER_PARTY,
+    ).length;
+    const commentShare =
+      totalMessages === 0 ? 0 : Math.round((commentMessages / totalMessages) * 100);
+    const taskShare = totalMessages === 0 ? 0 : Math.round((taskMessages / totalMessages) * 100);
+    return {
+      totalMessages,
+      commentMessages,
+      taskMessages,
+      userMessages,
+      delegationMessages,
+      commentShare,
+      taskShare,
+    };
+  }, [sessionMessages]);
 
   const refreshAgents = useCallback(async () => {
     const { agents: next } = await api.listAgents();
@@ -900,6 +972,27 @@ export default function App() {
               </div>
             </header>
 
+            <section className="insight-grid" aria-label="Playground insights">
+              <InsightCard
+                label="Messages"
+                value={String(playgroundInsights.totalMessages)}
+                detail={`${playgroundInsights.userMessages} you · ${playgroundInsights.assistantMessages} agent`}
+                fill={Math.max(8, playgroundInsights.userShare)}
+              />
+              <InsightCard
+                label="Assistant share"
+                value={`${playgroundInsights.assistantShare}%`}
+                detail="portion of replies written by the Agent"
+                fill={Math.max(8, playgroundInsights.assistantShare)}
+              />
+              <InsightCard
+                label="Avg message size"
+                value={`${playgroundInsights.averageLength} chars`}
+                detail="average payload per message"
+                fill={Math.min(100, Math.max(8, Math.round(playgroundInsights.averageLength / 3)))}
+              />
+            </section>
+
             {showSettings && (
               <form className="settings-panel" onSubmit={saveAgent}>
                 <div className="settings-title">
@@ -1114,6 +1207,37 @@ export default function App() {
                 )}
               </div>
             </header>
+
+            <section className="insight-grid" aria-label="Session insights">
+              <InsightCard
+                label="Session messages"
+                value={String(sessionInsights.totalMessages)}
+                detail={`${sessionInsights.taskMessages} tasks · ${sessionInsights.commentMessages} comments`}
+                fill={Math.max(8, sessionInsights.taskShare)}
+              />
+              <InsightCard
+                label="Delegation traffic"
+                value={String(sessionInsights.delegationMessages)}
+                detail="agent-to-agent handoffs in this transcript"
+                fill={Math.max(
+                  8,
+                  sessionInsights.totalMessages === 0
+                    ? 0
+                    : Math.round((sessionInsights.delegationMessages / sessionInsights.totalMessages) * 100),
+                )}
+              />
+              <InsightCard
+                label="Human prompts"
+                value={String(sessionInsights.userMessages)}
+                detail={`${selectedSession.memberAgentIds.length} member${selectedSession.memberAgentIds.length === 1 ? "" : "s"} active`}
+                fill={Math.max(
+                  8,
+                  sessionInsights.totalMessages === 0
+                    ? 0
+                    : Math.round((sessionInsights.userMessages / sessionInsights.totalMessages) * 100),
+                )}
+              />
+            </section>
 
             {showSessionMembers && (
               <div className="settings-panel">
