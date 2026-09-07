@@ -537,6 +537,63 @@ button {
   background: linear-gradient(90deg, #927df0, #6954d9);
 }
 
+.breakdown-panel {
+  max-width: 1180px;
+  margin: 0 auto 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(251, 250, 247, 0.92);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.breakdown-header p {
+  margin: 5px 0 0;
+  color: #777870;
+  font-size: 10px;
+}
+
+.breakdown-rows {
+  display: grid;
+  gap: 10px;
+}
+
+.breakdown-row {
+  display: grid;
+  gap: 6px;
+}
+
+.breakdown-row-copy {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.breakdown-row-copy strong {
+  font-size: 11px;
+}
+
+.breakdown-row-copy span {
+  color: #81827b;
+  font-size: 10px;
+}
+
+.breakdown-track {
+  height: 7px;
+  border-radius: 999px;
+  background: #e9e8e3;
+  overflow: hidden;
+}
+
+.breakdown-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9e8bf4, #6954d9);
+}
+
 .status {
   border-radius: 999px;
   display: inline-flex;
