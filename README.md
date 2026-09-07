@@ -7,14 +7,6 @@ OpenRouter API.
 Run it locally with Docker, Colima, or rootless Podman, or deploy it to
 Volcengine ECS.
 
-> [!WARNING]
-> This is a hackathon proof of concept. Logged-in users each only see their
-> own Agents and Sessions, and anyone can self-register an account (there's
-> no invite/approval step), but there is no hardened sandbox middleware, no
-> RBAC, and session logs are only tagged with the owning user's id, not
-> access-controlled by it (still gated by an optional shared token). Do not
-> use production data or credentials. See [SECURITY.md](SECURITY.md).
-
 ## Screenshots
 
 ### Agent Playground
