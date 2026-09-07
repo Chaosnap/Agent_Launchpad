@@ -487,6 +487,56 @@ button {
   gap: 7px;
 }
 
+.insight-grid {
+  max-width: 1180px;
+  margin: 0 auto 14px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.insight-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(251, 250, 247, 0.9);
+  padding: 12px;
+  display: grid;
+  gap: 5px;
+}
+
+.insight-label {
+  color: #86867f;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.insight-card strong {
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.insight-detail {
+  color: #76776f;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.insight-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #e9e8e3;
+  overflow: hidden;
+}
+
+.insight-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #927df0, #6954d9);
+}
+
 .status {
   border-radius: 999px;
   display: inline-flex;
@@ -1084,6 +1134,10 @@ textarea:focus {
   }
 
   .prompt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .insight-grid {
     grid-template-columns: 1fr;
   }
 }
